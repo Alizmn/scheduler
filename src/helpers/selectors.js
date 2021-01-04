@@ -90,4 +90,14 @@
    }
  }
 
+ export function getInterviewersForDay(state, day) {
+  const getForDay = state.days.filter((el) => el.name === day)[0]
+  if (getForDay) {
+    return getForDay.interviewers.map((el) => state.interviewers[el]);
+  } else {
+    return [];
+  }
+  
+}
+
 // console.log(getInterview(state, state.appointments["3"].interview));

@@ -105,7 +105,7 @@ storiesOf("Button", module)
           id={interviewer.id}
           name={interviewer.name}
           avatar={interviewer.avatar}
-          onChange={event => action("setInterviewer")(interviewer.id)}
+          setInterviewer={event => action("setInterviewer")(interviewer.id)}
         />
       ));
 

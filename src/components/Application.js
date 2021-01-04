@@ -3,7 +3,7 @@ import React , { useState, useEffect } from "react";
 import "components/Application.scss";
 import DayList from "./DayList";
 import Appointment from "components/Appointment";
-import {getAppointmentsForDay,getInterview} from "../helpers/selectors" 
+import {getAppointmentsForDay,getInterview, getInterviewersForDay} from "../helpers/selectors" 
 
 const axios = require("axios");
 
@@ -79,10 +79,27 @@ export default function Application(props) {
   const setDay = day => setState({ ...state, day });
   // const setDays = days => setState(perv => ({ ...perv, days }));
   // const setAppointments = appointments => setState({ ...state, appointments });
-
-  const appointments = getAppointmentsForDay({days: state.days, appointments: state.appointments, interviewers: state.interviewers},state.day);
-  const schedule = appointments.map((appointment) => {
+  
+  const bookInterview = (id, interview) => {
+    const appointment = {
+      ...state.appointments[id],
+      interview: { ...interview }
+    };
+    const appointments = {
+      ...state.appointments,
+      [id]: appointment
+    };
+    console.log({interview: {...interview}});
+    return axios.put(`http://localhost:8001/api/appointments/${id}`, {interview: {...interview}})
+         .then((res) => {
+           console.log(res);
+           return setState((state) => ({...state, appointments}));
+          });
+  };
+  const dailyAppointments = getAppointmentsForDay({days: state.days, appointments: state.appointments, interviewers: state.interviewers},state.day);
+  const schedule = dailyAppointments.map((appointment) => {
     const interview = getInterview(state, appointment.interview);
+    const interviewers = getInterviewersForDay(state, state.day)
   
     return (
       <Appointment
@@ -90,6 +107,8 @@ export default function Application(props) {
         id={appointment.id}
         time={appointment.time}
         interview={interview}
+        interviewers={interviewers}
+        bookInterview={bookInterview}
       />
     );
   });
