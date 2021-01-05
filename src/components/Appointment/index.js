@@ -29,14 +29,18 @@ export default function Appointment(props) {
   );
 
   const save = (name, interviewer) => {
-    const interview = {
-      student : name,
-      interviewer
-    };
-    transition(SAVING);
-    props.bookInterview(props.id, interview)
-      .then((res) => transition(SHOW))
-      .catch(error => transition(ERROR_SAVE, true))
+    if (name && interviewer) {
+      
+      const interview = {
+        student : name,
+        interviewer
+      };
+      transition(SAVING);
+      props.bookInterview(props.id, interview)
+        .then((res) => transition(SHOW))
+        .catch(error => transition(ERROR_SAVE, true))
+    } 
+    // Any custom error can place here for name and interviewer selection
     
   };
   const deleteWarning = () => {

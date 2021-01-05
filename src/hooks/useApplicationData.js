@@ -1,6 +1,5 @@
 import {useState, useEffect} from 'react';
-
-const axios = require("axios");
+import axios from "axios";
 
 export default function useApplicationData() {
 
@@ -11,20 +10,14 @@ export default function useApplicationData() {
     interviewers:{}
   });
 
-  const setDay = day => setState({ ...state, day });
-  // const setDays = days => setState(perv => ({ ...perv, days }));
-  // const setAppointments = appointments => setState({ ...state, appointments });
-  
-  // const spotModifier = (appointmentId, add = true) => {
-  //   const currentSpots = state.days.find((day) => {
-  //     day.appointments.includes(appointmentId)
-  //   })
-  // };
+  const setDay = day => setState({ ...state, day });  
 
-  const spotModifier = (appointmentId, add ) => {
-    return state.days.map((el) => {
-      if (el.id === state.days.find((day) => (day.appointments.includes(appointmentId))).id) {
-        return {...el, spots: el.spots + add};
+  const spotModifier = (appointmentId, days, appointments ) => {
+    const newSpots = days.find((day) => day.appointments.includes(appointmentId)).appointments.filter((appointment) => (!appointments[appointment].interview)).length;
+  
+    return days.map((el) => {
+      if (el.id === days.find((day) => (day.appointments.includes(appointmentId))).id) {
+        return {...el, spots: newSpots };
       } else {
         return el;
       }
@@ -41,10 +34,8 @@ export default function useApplicationData() {
       [id]: appointment
     };
     return axios.put(`http://localhost:8001/api/appointments/${id}`, {interview: {...interview}})
-         .then(() => setState((state) => {
-           const days = spotModifier(id, -1);
-           return {...state, appointments, days}
-        }))
+         .then(() => setState(state => ({...state, appointments})))
+         .then(() => setState(state => ({...state, days: spotModifier(id, state.days, state.appointments)})));
   };
 
   const cancelInterview = (id) => {
@@ -57,10 +48,8 @@ export default function useApplicationData() {
       [id]: appointment
     };
     return axios.delete(`http://localhost:8001/api/appointments/${id}`)
-      .then(() => {
-        const days = spotModifier(id, 1);
-        return setState((state) => ({...state, appointments, days}))
-      })
+    .then(() => setState(state => ({...state, appointments})))
+    .then(() => setState(state => ({...state, days: spotModifier(id, state.days, state.appointments)})));
   };
 
   useEffect(() => {
@@ -71,17 +60,6 @@ export default function useApplicationData() {
     ])
       .then((all) => {setState(prev => ({...prev, days: all[0].data, appointments: all[1].data, interviewers:all[2].data}))});
   }, []);
-
-  
-  // useEffect(() => {
-
-  //   axios('http://localhost:8001/api/days')
-  //     .then((res) => {
-  //       console.log(res.data[0].spots);
-  //       setState(days => ({...days, days: res.data}))
-  //     });
-
-  // }, [state.appointments]);
 
   return {state, setDay, bookInterview, cancelInterview};
 };
